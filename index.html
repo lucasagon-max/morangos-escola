@@ -4,75 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Morangos Tatuí - Pedido Escolar</title>
-    <!-- Importando Tailwind para o visual de App e Supabase -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- BUG CORRIGIDO: SDK deve ser carregado antes de qualquer uso -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* Cor principal da marca Morangos Tatuí */
-        .bg-morango { background-color: #E3244B; }
-        .text-morango { color: #E3244B; }
-        .border-morango { border-color: #E3244B; }
-        .bg-morango-light { background-color: #fde8ec; }
+        body { font-family: 'Nunito', sans-serif; }
+
+        :root {
+            --morango: #E3244B;
+            --morango-dark: #c01a3b;
+            --morango-light: #fde8ec;
+            --morango-mid: #f9c0ce;
+        }
+
+        .bg-morango       { background-color: var(--morango); }
+        .text-morango     { color: var(--morango); }
+        .border-morango   { border-color: var(--morango); }
+        .bg-morango-light { background-color: var(--morango-light); }
+
+        /* Fundo com textura suave */
+        body {
+            background-color: #fdf5f7;
+            background-image: radial-gradient(circle at 20% 10%, #fde8ec 0%, transparent 50%),
+                              radial-gradient(circle at 80% 90%, #fde8ec 0%, transparent 50%);
+        }
+
+        /* Animação de entrada dos cards */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .slide-up {
+            animation: slideUp 0.4s ease forwards;
+            opacity: 0;
+        }
+        .slide-up:nth-child(1) { animation-delay: 0.05s; }
+        .slide-up:nth-child(2) { animation-delay: 0.12s; }
+        .slide-up:nth-child(3) { animation-delay: 0.19s; }
+        .slide-up:nth-child(4) { animation-delay: 0.26s; }
+
+        /* Inputs com foco na cor da marca */
+        input:focus {
+            outline: none;
+            border-color: var(--morango) !important;
+            box-shadow: 0 0 0 3px rgba(227, 36, 75, 0.12);
+        }
+
+        /* Botão principal */
+        .btn-pagar {
+            background-color: var(--morango);
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+        .btn-pagar:hover:not(:disabled) {
+            background-color: var(--morango-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(227, 36, 75, 0.35);
+        }
+        .btn-pagar:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-pagar:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Badge de erro */
+        #mensagemErro {
+            display: none;
+        }
+        #mensagemErro.visible {
+            display: flex;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 pb-24 font-sans">
+<body class="text-gray-800 pb-28">
 
     <!-- Cabeçalho -->
-    <header class="bg-white shadow-sm pt-8 pb-4 px-4 text-center">
-        <!-- Substitua o link abaixo pela sua imagem Morangos-Tatui-logotipo.jpg -->
-        <img src="https://via.placeholder.com/150x50?text=Morangos+Tatui" alt="Logotipo Morangos Tatuí" class="mx-auto h-12 mb-2 object-contain rounded">
-        <h1 class="text-xl font-bold text-gray-800">Dia do Morango na Escola 🍓</h1>
+    <header class="bg-white shadow-sm pt-8 pb-5 px-4 text-center">
+        <!-- Troque o src pela URL real do logotipo: Morangos-Tatui-logotipo.jpg -->
+        <img src="Morangos-Tatui-logotipo.jpg"
+             onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block'"
+             alt="Logotipo Morangos Tatuí" class="mx-auto h-14 mb-2 object-contain">
+        <div id="logoFallback" style="display:none"
+             class="mx-auto mb-2 text-2xl font-black text-morango tracking-tight">
+            🍓 Morangos Tatuí
+        </div>
+        <h1 class="text-xl font-extrabold text-gray-800">Dia do Morango na Escola</h1>
         <p class="text-sm text-gray-500 mt-1">Garanta a bandeja fresca do seu filho!</p>
     </header>
 
-    <main class="max-w-md mx-auto mt-6 px-4">
-        
+    <main class="max-w-md mx-auto mt-5 px-4 space-y-3">
+
         <!-- Card do Produto -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center mb-6">
-            <div class="flex-1">
-                <h2 class="font-bold text-lg">Bandeja de Morangos</h2>
-                <p class="text-xs text-gray-500 mt-1">Morangos selecionados e fresquinhos, entregues direto na escola.</p>
-                <p class="text-morango font-bold mt-2">R$ 15,00</p>
+        <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center">
+            <div class="flex-1 pr-3">
+                <span class="text-xs font-bold uppercase tracking-wide text-morango bg-morango-light px-2 py-0.5 rounded-full">Produto</span>
+                <h2 class="font-extrabold text-lg mt-1">Bandeja de Morangos</h2>
+                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">Morangos selecionados e fresquinhos, entregues direto na escola.</p>
+                <p class="text-morango font-black text-lg mt-2">R$ 15,00</p>
             </div>
-            <!-- Substitua o link abaixo pela sua imagem Morangos-Tatuí.png -->
-            <img src="https://via.placeholder.com/80?text=Bandeja" alt="Bandeja de Morango" class="w-20 h-20 object-cover rounded-lg ml-3">
+            <!-- Troque o src pela URL real da imagem: Morangos-Tatuí.png -->
+            <img src="Morangos-Tatuí.png"
+                 onerror="this.src='https://placehold.co/80x80/fde8ec/E3244B?text=🍓'"
+                 alt="Bandeja de Morango"
+                 class="w-20 h-20 object-cover rounded-xl flex-shrink-0">
         </div>
 
-        <form id="pedidoForm" class="space-y-4">
-            
+        <!-- Mensagem de Erro (oculta por padrão) -->
+        <div id="mensagemErro" class="items-center gap-3 bg-red-50 border border-red-200 rounded-2xl p-3 text-sm text-red-700 font-semibold">
+            <span class="text-lg">⚠️</span>
+            <span id="textoErro">Ocorreu um erro. Tente novamente.</span>
+        </div>
+
+        <form id="pedidoForm" novalidate class="space-y-3">
+
             <!-- Dados do Aluno -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="font-bold mb-3 text-sm text-gray-700">🧑‍🎓 Dados do Aluno</h3>
-                <div class="space-y-3">
-                    <div>
-                        <input type="text" id="nomeAluno" required placeholder="Nome completo do Aluno" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-morango">
-                    </div>
-                    <div>
-                        <input type="text" id="turma" required placeholder="Série / Turma (Ex: 2º Ano A)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-morango">
-                    </div>
+            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100">
+                <h3 class="font-bold mb-3 text-sm text-gray-600 flex items-center gap-1">
+                    🧑‍🎓 <span>Dados do Aluno</span>
+                </h3>
+                <div class="space-y-2.5">
+                    <input type="text" id="nomeAluno" required autocomplete="off"
+                           placeholder="Nome completo do aluno"
+                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
+                    <input type="text" id="turma" required autocomplete="off"
+                           placeholder="Série / Turma (Ex: 2º Ano A)"
+                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
                 </div>
             </div>
 
             <!-- Dados do Responsável -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="font-bold mb-3 text-sm text-gray-700">📱 Dados do Responsável</h3>
-                <div class="space-y-3">
-                    <div>
-                        <input type="text" id="nomeResponsavel" required placeholder="Seu Nome" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-morango">
-                    </div>
-                    <div>
-                        <input type="tel" id="telefone" required placeholder="(15) 99999-9999" maxlength="15" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-morango">
-                    </div>
+            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100">
+                <h3 class="font-bold mb-3 text-sm text-gray-600 flex items-center gap-1">
+                    📱 <span>Dados do Responsável</span>
+                </h3>
+                <div class="space-y-2.5">
+                    <input type="text" id="nomeResponsavel" required autocomplete="name"
+                           placeholder="Seu nome completo"
+                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
+                    <input type="tel" id="telefone" required autocomplete="tel"
+                           placeholder="(15) 99999-9999" maxlength="15"
+                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
                 </div>
             </div>
 
             <!-- Controle de Quantidade -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                <span class="font-bold text-gray-700">Quantidade:</span>
-                <div class="flex items-center space-x-4 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                    <button type="button" id="btnMenos" class="w-8 h-8 flex items-center justify-center rounded bg-white text-morango font-bold shadow-sm hover:bg-gray-100">-</button>
-                    <span id="displayQuantidade" class="font-bold w-4 text-center">1</span>
-                    <button type="button" id="btnMais" class="w-8 h-8 flex items-center justify-center rounded bg-morango-light text-morango font-bold shadow-sm hover:bg-red-100">+</button>
+            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center justify-between">
+                <span class="font-bold text-gray-700 text-sm">Quantidade de bandejas:</span>
+                <div class="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-200">
+                    <button type="button" id="btnMenos"
+                            class="w-9 h-9 flex items-center justify-center rounded-lg bg-white text-morango font-black shadow-sm hover:bg-red-50 transition-colors text-lg leading-none">
+                        −
+                    </button>
+                    <span id="displayQuantidade" class="font-black w-5 text-center text-gray-800 text-base">1</span>
+                    <button type="button" id="btnMais"
+                            class="w-9 h-9 flex items-center justify-center rounded-lg bg-morango-light text-morango font-black shadow-sm hover:bg-red-100 transition-colors text-lg leading-none">
+                        +
+                    </button>
                 </div>
             </div>
 
@@ -80,103 +183,152 @@
     </main>
 
     <!-- Barra Inferior Fixa -->
-    <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 pb-6 shadow-lg">
+    <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-4 pt-3 pb-6 shadow-xl">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div>
-                <p class="text-xs text-gray-500">Total a pagar</p>
-                <p class="font-bold text-xl text-gray-800">R$ <span id="valorTotal">15,00</span></p>
+                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Total a pagar</p>
+                <p class="font-black text-2xl text-gray-800">R$ <span id="valorTotal">15,00</span></p>
             </div>
-            <button type="submit" form="pedidoForm" id="btnPagar" class="bg-morango text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-red-700 transition w-48 text-center">
-                Pagar Agora
+            <button id="btnPagar"
+                    class="btn-pagar text-white font-bold py-3 px-7 rounded-full shadow-md text-sm">
+                Pagar Agora 💳
             </button>
         </div>
     </div>
 
 <script>
+    // =============================================
     // 1. CONFIGURAÇÕES
+    // =============================================
     const PRECO_BANDEJA = 15.00;
     const SUPABASE_URL = 'https://fepvxdmssoqfktqmbyzn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcHZ4ZG1zc29xZmt0cW1ieXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDg4NjUsImV4cCI6MjA4OTkyNDg2NX0.Duy840JZEMWxXzguf1JV71xhjdaLmpZiileBdGAJf0I';
-    
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2. CONTROLE DA TELA (Quantidade, Preço e Máscara)
+    // BUG CORRIGIDO: O SDK expõe o cliente via window.supabase.createClient.
+    // A linha original "const supabase = supabase.createClient(...)" causava
+    // ReferenceError circular pois tentava usar a variável antes de declará-la.
+    const { createClient } = window.supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =============================================
+    // 2. CONTROLE DA TELA
+    // =============================================
     let quantidade = 1;
-    const btnMenos = document.getElementById('btnMenos');
-    const btnMais = document.getElementById('btnMais');
-    const displayQuantidade = document.getElementById('displayQuantidade');
-    const spanValorTotal = document.getElementById('valorTotal');
-    const inputTelefone = document.getElementById('telefone');
+
+    const btnMenos        = document.getElementById('btnMenos');
+    const btnMais         = document.getElementById('btnMais');
+    const displayQtd      = document.getElementById('displayQuantidade');
+    const spanValorTotal  = document.getElementById('valorTotal');
+    const inputTelefone   = document.getElementById('telefone');
+    const btnPagar        = document.getElementById('btnPagar');
+    const mensagemErro    = document.getElementById('mensagemErro');
+    const textoErro       = document.getElementById('textoErro');
 
     function atualizarTela() {
-        displayQuantidade.innerText = quantidade;
-        spanValorTotal.innerText = (quantidade * PRECO_BANDEJA).toFixed(2).replace('.', ',');
+        displayQtd.innerText = quantidade;
+        spanValorTotal.innerText = (quantidade * PRECO_BANDEJA)
+            .toFixed(2)
+            .replace('.', ',');
     }
 
     btnMenos.addEventListener('click', () => {
         if (quantidade > 1) { quantidade--; atualizarTela(); }
     });
-
     btnMais.addEventListener('click', () => {
-        quantidade++; atualizarTela();
+        quantidade++;
+        atualizarTela();
     });
 
-    // Máscara de Telefone (15) 99999-9999
-    inputTelefone.addEventListener('input', function (e) {
-        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    // Máscara de telefone: (15) 99999-9999
+    inputTelefone.addEventListener('input', function () {
+        let digits = this.value.replace(/\D/g, '').slice(0, 11);
+        if (digits.length === 0) { this.value = ''; return; }
+        let formatted = '(' + digits.slice(0, 2);
+        if (digits.length > 2) formatted += ') ' + digits.slice(2, 7);
+        if (digits.length > 7) formatted += '-' + digits.slice(7, 11);
+        this.value = formatted;
     });
 
-    // 3. ENVIAR PEDIDO E ABRIR MERCADO PAGO
-    document.getElementById('pedidoForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = document.getElementById('btnPagar');
-        btn.innerText = "Gerando Pix/Cartão...";
-        btn.disabled = true;
-        btn.classList.add('opacity-70');
+    // =============================================
+    // 3. VALIDAÇÃO
+    // =============================================
+    function validarFormulario() {
+        const nomeAluno      = document.getElementById('nomeAluno').value.trim();
+        const turma          = document.getElementById('turma').value.trim();
+        const nomeResp       = document.getElementById('nomeResponsavel').value.trim();
+        const telDigitos     = inputTelefone.value.replace(/\D/g, '');
 
-        const nomeAluno = document.getElementById('nomeAluno').value;
-        const turma = document.getElementById('turma').value;
-        const nomeResponsavel = document.getElementById('nomeResponsavel').value;
-        const telefone = document.getElementById('telefone').value;
-        const total = quantidade * PRECO_BANDEJA;
+        if (!nomeAluno)       return 'Informe o nome completo do aluno.';
+        if (!turma)           return 'Informe a série / turma do aluno.';
+        if (!nomeResp)        return 'Informe o seu nome de responsável.';
+        if (telDigitos.length < 10) return 'Informe um telefone válido com DDD.';
+        return null; // sem erros
+    }
+
+    function mostrarErro(msg) {
+        textoErro.innerText = msg;
+        mensagemErro.classList.add('visible');
+        mensagemErro.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function esconderErro() {
+        mensagemErro.classList.remove('visible');
+    }
+
+    // =============================================
+    // 4. ENVIO DO PEDIDO
+    // =============================================
+    btnPagar.addEventListener('click', async () => {
+        esconderErro();
+
+        const erroValidacao = validarFormulario();
+        if (erroValidacao) { mostrarErro(erroValidacao); return; }
+
+        // Estado de loading
+        btnPagar.innerHTML = '<span class="spinner"></span>Aguarde...';
+        btnPagar.disabled = true;
+
+        const nomeAluno      = document.getElementById('nomeAluno').value.trim();
+        const turma          = document.getElementById('turma').value.trim();
+        const nomeResponsavel = document.getElementById('nomeResponsavel').value.trim();
+        const telefone       = inputTelefone.value.trim();
+        const total          = quantidade * PRECO_BANDEJA;
 
         try {
-            // A. Salva no banco e pede o ID de volta (.select())
-            const { data: pedidoSalvo, error: erroBanco } = await supabase
+            // A. Salva o pedido no banco e recupera o ID
+            const { data: pedidoSalvo, error: erroBanco } = await supabaseClient
                 .from('pedidos_escola')
-                .insert([{ 
-                    nome_aluno: nomeAluno, 
-                    turma: turma, 
+                .insert([{
+                    nome_aluno: nomeAluno,
+                    turma: turma,
                     nome_responsavel: nomeResponsavel,
                     telefone_responsavel: telefone,
-                    quantidade: quantidade, 
-                    valor_total: total, 
-                    status_pagamento: 'pendente' 
+                    quantidade: quantidade,
+                    valor_total: total,
+                    status_pagamento: 'pendente'
                 }])
                 .select();
 
-            if (erroBanco) throw erroBanco;
+            if (erroBanco) throw new Error('Erro ao salvar pedido: ' + erroBanco.message);
 
             const pedidoId = pedidoSalvo[0].id;
 
-            // B. Chama a Edge Function que você acabou de criar no prompt de comando!
-            const { data: pagamentoData, error: erroPagamento } = await supabase.functions.invoke('gerar-pagamento', {
+            // B. Chama a Edge Function para gerar o link de pagamento
+            const { data: pagamentoData, error: erroPagamento } = await supabaseClient.functions.invoke('gerar-pagamento', {
                 body: { pedido_id: pedidoId, quantidade: quantidade }
             });
 
-            if (erroPagamento) throw erroPagamento;
+            if (erroPagamento) throw new Error('Erro ao gerar pagamento: ' + erroPagamento.message);
+            if (!pagamentoData?.url) throw new Error('Link de pagamento não retornado.');
 
-            // C. Redireciona o cliente para a tela oficial do Mercado Pago
+            // C. Redireciona para a tela de pagamento do Mercado Pago
             window.location.href = pagamentoData.url;
 
         } catch (error) {
-            alert("Ocorreu um erro ao gerar o pagamento. Tente novamente.");
             console.error(error);
-            btn.innerText = "Pagar Agora";
-            btn.disabled = false;
-            btn.classList.remove('opacity-70');
+            mostrarErro('Erro ao processar pedido. Verifique sua conexão e tente novamente.');
+            btnPagar.innerHTML = 'Pagar Agora 💳';
+            btnPagar.disabled = false;
         }
     });
 </script>
