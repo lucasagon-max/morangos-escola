@@ -276,8 +276,16 @@
     }
 
     // =============================================
-    // 4. ENVIO DO PEDIDO
+    // 4. ENVIO DO PEDIDO (CORRIGIDO)
     // =============================================
+    
+    // Função infalível para gerar o ID do pedido aqui mesmo no navegador
+    function gerarIdSeguro() {
+        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
     btnPagar.addEventListener('click', async () => {
         esconderErro();
 
@@ -285,7 +293,7 @@
         if (erroValidacao) { mostrarErro(erroValidacao); return; }
 
         // Estado de loading
-        btnPagar.innerHTML = '<span class="spinner"></span>Aguarde...';
+        btnPagar.innerHTML = '<span class="spinner"></span>Processando...';
         btnPagar.disabled = true;
 
         const nomeAluno      = document.getElementById('nomeAluno').value.trim();
@@ -293,12 +301,16 @@
         const nomeResponsavel = document.getElementById('nomeResponsavel').value.trim();
         const telefone       = inputTelefone.value.trim();
         const total          = quantidade * PRECO_BANDEJA;
+        
+        // Criamos o ID antes de falar com o banco!
+        const pedidoId = gerarIdSeguro();
 
         try {
-            // A. Salva o pedido no banco e recupera o ID
-            const { data: pedidoSalvo, error: erroBanco } = await supabaseClient
+            // A. Salva o pedido no banco (SEM O .select() que causava o bloqueio)
+            const { error: erroBanco } = await supabaseClient
                 .from('pedidos_escola')
                 .insert([{
+                    id: pedidoId, // Enviamos o ID que acabamos de criar
                     nome_aluno: nomeAluno,
                     turma: turma,
                     nome_responsavel: nomeResponsavel,
@@ -306,31 +318,25 @@
                     quantidade: quantidade,
                     valor_total: total,
                     status_pagamento: 'pendente'
-                }])
-                .select();
+                }]);
 
-            if (erroBanco) throw new Error('Erro ao salvar pedido: ' + erroBanco.message);
+            if (erroBanco) throw new Error('Erro do Banco: ' + erroBanco.message);
 
-            const pedidoId = pedidoSalvo[0].id;
-
-            // B. Chama a Edge Function para gerar o link de pagamento
+            // B. Chama a Função do Mercado Pago passando o nosso ID
             const { data: pagamentoData, error: erroPagamento } = await supabaseClient.functions.invoke('gerar-pagamento', {
                 body: { pedido_id: pedidoId, quantidade: quantidade }
             });
 
-            if (erroPagamento) throw new Error('Erro ao gerar pagamento: ' + erroPagamento.message);
-            if (!pagamentoData?.url) throw new Error('Link de pagamento não retornado.');
+            if (erroPagamento) throw new Error('Erro na Função: ' + erroPagamento.message);
+            if (!pagamentoData?.url) throw new Error('Mercado Pago não retornou o link.');
 
-            // C. Redireciona para a tela de pagamento do Mercado Pago
+            // C. Redireciona para o Checkout Oficial!
             window.location.href = pagamentoData.url;
 
         } catch (error) {
             console.error(error);
-            mostrarErro('Erro ao processar pedido. Verifique sua conexão e tente novamente.');
+            mostrarErro('Não foi possível gerar o pagamento. Tente novamente.');
             btnPagar.innerHTML = 'Pagar Agora 💳';
             btnPagar.disabled = false;
         }
     });
-</script>
-</body>
-</html>
