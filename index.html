@@ -314,9 +314,14 @@
 
             if (erroBanco) throw new Error('Erro ao salvar no banco: ' + erroBanco.message);
 
-            // B. Aciona o Mercado Pago mandando o ID gerado
+            // B. Aciona o Mercado Pago mandando o ID gerado e os dados da criança
             const { data: pagamentoData, error: erroPagamento } = await supabaseClient.functions.invoke('gerar-pagamento', {
-                body: { pedido_id: pedidoId, quantidade: quantidade }
+                body: { 
+                    pedido_id: pedidoId, 
+                    quantidade: quantidade,
+                    nome_aluno: nomeAluno, // Enviando o nome para a nuvem
+                    turma: turma           // Enviando a turma para a nuvem
+                }
             });
 
             if (erroPagamento) throw new Error('Erro na Função MP: ' + erroPagamento.message);
