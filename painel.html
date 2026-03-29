@@ -1,4 +1,142 @@
-async function carregarPedidos() {
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Pedidos - Morangos Tatuí</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f3f4f6; }
+        .text-morango { color: #E3244B; }
+        .bg-morango { background-color: #E3244B; }
+        .bg-morango-light { background-color: #fde8ec; }
+
+        /* CONFIGURAÇÃO DE IMPRESSÃO */
+        @media print {
+            body { background-color: white; font-size: 12px; p: 0; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .shadow-sm, .shadow-md { box-shadow: none !important; border: 1px solid #e5e7eb; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #000 !important; padding: 8px !important; text-align: left; }
+            th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .linha-pendente { display: none !important; } /* Não imprime quem não pagou */
+        }
+    </style>
+</head>
+<body class="text-gray-800 p-6">
+
+    <div id="telaLogin" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 no-print">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+            <h2 class="text-2xl font-black text-gray-800 mb-2">🍓 Área Restrita</h2>
+            <p class="text-sm text-gray-500 mb-6">Painel Morangos Tatuí</p>
+            
+            <form id="formLogin" class="space-y-4">
+                <input type="email" id="email" required placeholder="E-mail cadastrado" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-500">
+                <input type="password" id="senha" required placeholder="Sua senha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-500">
+                <p id="erroLogin" class="text-red-500 text-sm font-bold hidden">Dados incorretos!</p>
+                <button type="submit" class="w-full bg-morango hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition-all">Entrar no Painel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="conteudoPainel" class="hidden">
+        
+        <div class="hidden print-only mb-6 text-center border-b pb-4">
+            <h1 class="text-2xl font-black text-gray-900">🍓 Morangos Tatuí - Lista de Entregas</h1>
+            <p class="text-gray-600 font-bold uppercase tracking-widest text-xs mt-1">Evento de Páscoa na Escola</p>
+        </div>
+
+        <header class="no-print max-w-6xl mx-auto flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <img src="Morangos-Tatui-logotipo.jpg" onerror="this.src='https://placehold.co/80x80/fde8ec/E3244B?text=🍓'" alt="Logo" class="h-16 rounded-xl object-contain bg-white shadow-sm p-2">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">Painel de Controle</h1>
+                    <button onclick="fazerLogout()" class="text-xs text-red-500 hover:text-red-700 font-bold underline">Sair do Sistema</button>
+                </div>
+            </div>
+            <button onclick="window.print()" class="bg-morango hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center gap-2">
+                🖨️ Imprimir para Escola
+            </button>
+        </header>
+
+        <main class="max-w-6xl mx-auto space-y-6">
+            
+            <div class="no-print grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Arrecadação Total (PAGO)</p>
+                    <p class="text-3xl font-black text-green-600 mt-2" id="cardValor">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Bandejas Vendidas (PAGO)</p>
+                    <p class="text-3xl font-black text-morango mt-2" id="cardBandejas">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Pedidos Pendentes</p>
+                    <p class="text-3xl font-black text-orange-500 mt-2" id="cardPendentes">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="tabelaPedidos">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-[11px] text-gray-400 uppercase tracking-widest">
+                                <th class="p-4 font-black">Data/Hora</th>
+                                <th class="p-4 font-black">Aluno(s)</th>
+                                <th class="p-4 font-black">Turma</th>
+                                <th class="p-4 font-black">Responsável / Contato</th>
+                                <th class="p-4 font-black text-center">Qtd</th>
+                                <th class="p-4 font-black text-center">Status</th>
+                                <th class="print-only p-4 font-black text-center">Visto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabela" class="divide-y divide-gray-100 text-sm">
+                            <tr><td colspan="7" class="p-12 text-center text-gray-400 animate-pulse">Carregando pedidos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    const SUPABASE_URL = 'https://fepvxdmssoqfktqmbyzn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcHZ4ZG1zc29xZmt0cW1ieXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDg4NjUsImV4cCI6MjA4OTkyNDg2NX0.Duy840JZEMWxXzguf1JV71xhjdaLmpZiileBdGAJf0I';
+
+    const { createClient } = window.supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const telaLogin = document.getElementById('telaLogin');
+    const conteudoPainel = document.getElementById('conteudoPainel');
+    const erroLogin = document.getElementById('erroLogin');
+
+    async function verificarSessao() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            telaLogin.style.display = 'none';
+            conteudoPainel.style.display = 'block';
+            carregarPedidos();
+        }
+    }
+
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('senha').value;
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) { erroLogin.classList.remove('hidden'); } 
+        else { window.location.reload(); }
+    });
+
+    async function fazerLogout() {
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    }
+
+    async function carregarPedidos() {
         try {
             const { data, error } = await supabaseClient
                 .from('pedidos_escola')
@@ -13,7 +151,7 @@ async function carregarPedidos() {
             let pedidosPendentes = 0;
 
             if (data.length === 0) {
-                document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">Nenhum pedido feito ainda.</td></tr>';
+                document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="7" class="p-12 text-center text-gray-400">Nenhum pedido encontrado.</td></tr>';
                 return;
             }
 
@@ -25,41 +163,34 @@ async function carregarPedidos() {
                 const statusTexto = isPago ? 'PAGO' : 'PENDENTE';
                 const linhaClass = isPago ? '' : 'linha-pendente'; 
 
-                // === LÓGICA DO WHATSAPP ===
-                // Limpa o telefone (tira os parênteses e traços) para o link funcionar
-                const telefoneLimpo = pedido.telefone_responsavel.replace(/\D/g, ''); 
-                
-                // Texto automático de marketing
-                const mensagemZap = `Olá, ${pedido.nome_responsavel}! 🍓 Passando para confirmar que recebemos certinho o pagamento da(s) bandeja(s) do(a) ${pedido.nome_aluno}. Muito obrigado! 🥰\n\nSe você achou o nosso sistema prático, ajuda a gente espalhando o link no grupo de pais da escola? É esse aqui: https://clientes.morangostatui.com.br 🚀`;
-                
-                // Cria o link do botão
-                const linkZap = `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagemZap)}`;
+                // LÓGICA WHATSAPP
+                const telLimpo = pedido.telefone_responsavel.replace(/\D/g, ''); 
+                const msg = `Olá, ${pedido.nome_responsavel}! 🍓 Passando para confirmar que recebemos seu pedido da(s) bandeja(s) de Páscoa do(a) ${pedido.nome_aluno}. Tudo certo! 🥰\n\nSe puder, ajude a divulgar nosso link no grupo de pais: https://clientes.morangostatui.com.br 🚀`;
+                const linkZap = `https://wa.me/55${telLimpo}?text=${encodeURIComponent(msg)}`;
 
                 if (isPago) {
                     totalArrecadado += pedido.valor_total;
                     totalBandejasPagas += pedido.quantidade;
-                } else {
-                    pedidosPendentes++;
-                }
+                } else { pedidosPendentes++; }
 
                 html += `
                     <tr class="hover:bg-gray-50 transition-colors ${linhaClass}">
-                        <td class="p-4 text-gray-500 whitespace-nowrap">${dataFormatada}</td>
+                        <td class="p-4 text-gray-400 text-xs">${dataFormatada}</td>
                         <td class="p-4 font-bold text-gray-800">${pedido.nome_aluno}</td>
                         <td class="p-4 text-gray-600">${pedido.turma}</td>
                         <td class="p-4">
-                            <div class="font-bold text-gray-800">${pedido.nome_responsavel}</div>
+                            <div class="font-bold text-gray-800 text-xs">${pedido.nome_responsavel}</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs text-gray-500">${pedido.telefone_responsavel}</span>
-                                ${isPago ? `<a href="${linkZap}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 transition-colors no-print">💬 Avisar no Zap</a>` : ''}
+                                <span class="text-[10px] text-gray-400">${pedido.telefone_responsavel}</span>
+                                ${isPago ? `<a href="${linkZap}" target="_blank" class="no-print bg-green-500 hover:bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded transition-colors">Confirmar no WhatsApp</a>` : ''}
                             </div>
                         </td>
                         <td class="p-4 text-center font-black text-morango text-lg">${pedido.quantidade}</td>
                         <td class="p-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold tracking-wider ${statusClass}">${statusTexto}</span>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black tracking-tighter ${statusClass}">${statusTexto}</span>
                         </td>
                         <td class="print-only p-4 text-center">
-                            <div style="width: 20px; height: 20px; border: 2px solid #ccc; margin: 0 auto;"></div>
+                            <div style="width: 15px; height: 15px; border: 1px solid #000; margin: 0 auto;"></div>
                         </td>
                     </tr>
                 `;
@@ -68,10 +199,15 @@ async function carregarPedidos() {
             document.getElementById('corpoTabela').innerHTML = html;
             document.getElementById('cardValor').innerText = 'R$ ' + totalArrecadado.toFixed(2).replace('.', ',');
             document.getElementById('cardBandejas').innerText = totalBandejasPagas;
-            document.getElementById('cardPendentes').innerText = pedidosPendentes + ' pedidos';
+            document.getElementById('cardPendentes').innerText = pedidosPendentes;
 
         } catch (error) {
             console.error(error);
-            document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Erro de segurança ou ao carregar os dados.</td></tr>';
+            document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="7" class="p-12 text-center text-red-500 font-bold">Erro ao carregar dados. Verifique o RLS no Supabase.</td></tr>';
         }
     }
+
+    verificarSessao();
+</script>
+</body>
+</html>
