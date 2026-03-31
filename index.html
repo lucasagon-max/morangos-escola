@@ -3,332 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morangos Tatuí - Pedido Escolar</title>
-    <!-- Configurações para o WhatsApp e Redes Sociais -->
-    <meta property="og:title" content="🍓 Páscoa na Escola">
-    <meta property="og:description" content="Garanta a bandeja de morangos selecionados do seu filho(a) para o evento! Peça e pague online em menos de 1 minuto.">
-    <meta property="og:image" content="https://clientes.morangostatui.com.br/fondue-morangos-escola.jpg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://clientes.morangostatui.com.br">
+    <title>Vendas Encerradas - Morangos Tatuí</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Nunito', sans-serif; }
-        :root {
-            --morango: #E3244B;
-            --morango-dark: #c01a3b;
-            --morango-light: #fde8ec;
-        }
-        .bg-morango       { background-color: var(--morango); }
-        .text-morango     { color: var(--morango); }
-        .border-morango   { border-color: var(--morango); }
-        .bg-morango-light { background-color: var(--morango-light); }
-
-        body {
+        body { 
+            font-family: 'Nunito', sans-serif; 
             background-color: #fdf5f7;
             background-image: radial-gradient(circle at 20% 10%, #fde8ec 0%, transparent 50%),
                               radial-gradient(circle at 80% 90%, #fde8ec 0%, transparent 50%);
         }
-
+        .text-morango { color: #E3244B; }
+        .bg-morango { background-color: #E3244B; }
+        .hover-bg-morango-dark:hover { background-color: #c01a3b; }
+        .bg-whatsapp { background-color: #25D366; }
+        .hover-bg-whatsapp-dark:hover { background-color: #128C7E; }
+        
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(18px); }
             to   { opacity: 1; transform: translateY(0); }
         }
         .slide-up { animation: slideUp 0.4s ease forwards; opacity: 0; }
-
-        input:focus {
-            outline: none;
-            border-color: var(--morango) !important;
-            box-shadow: 0 0 0 3px rgba(227, 36, 75, 0.12);
-        }
-
-        .btn-pagar {
-            background-color: var(--morango);
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-        }
-        .btn-pagar:hover:not(:disabled) {
-            background-color: var(--morango-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(227, 36, 75, 0.35);
-        }
-        .btn-pagar:active:not(:disabled) { transform: translateY(0); }
-        .btn-pagar:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        #mensagemErro { display: none; }
-        #mensagemErro.visible { display: flex; }
-
-        .spinner {
-            width: 18px; height: 18px;
-            border: 2.5px solid rgba(255,255,255,0.4);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-gray-800 pb-28">
+<body class="text-gray-800 flex flex-col min-h-screen items-center justify-center p-4 text-center">
 
-    <header class="bg-white shadow-sm pt-8 pb-5 px-4 text-center">
+    <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-pink-100 slide-up">
         <img src="Morangos-Tatui-logotipo.jpg"
-             onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block'"
-             alt="Logotipo Morangos Tatuí" class="mx-auto h-14 mb-2 object-contain">
-        <div id="logoFallback" style="display:none"
-             class="mx-auto mb-2 text-2xl font-black text-morango tracking-tight">
-            🍓 Morangos Tatuí
+             onerror="this.style.display='none'"
+             alt="Logotipo Morangos Tatuí" class="mx-auto h-20 mb-4 object-contain">
+        
+        <h1 class="text-3xl font-black text-gray-800 mb-2">Vendas Encerradas! 🍓</h1>
+        
+        <div class="bg-red-50 text-red-700 p-4 rounded-2xl mb-6 mt-6 font-semibold text-sm">
+            O prazo para a compra antecipada das bandejas da escola terminou. 
         </div>
-        <h1 class="text-xl font-extrabold text-gray-800">Páscoa com Morangos</h1>
-        <p class="text-sm text-gray-500 mt-1">Garanta a bandeja fresca do seu filho!</p>
-    </header>
+        
+        <p class="text-gray-500 text-sm leading-relaxed mb-6">
+            Agradecemos a todos os pais que garantiram as bandejas!<br>
+            Nossa equipe já está separando os morangos fresquinhos com muito carinho.
+        </p>
 
-    <main class="max-w-md mx-auto mt-5 px-4 space-y-3">
+        <div class="space-y-3 mt-4">
+            <!-- Botão Instagram -->
+            <a href="https://www.instagram.com/morangos_tatui/" target="_blank" 
+               class="flex items-center justify-center gap-2 w-full bg-morango hover-bg-morango-dark text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.036 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/>
+                </svg>
+                Acompanhe no Instagram
+            </a>
 
-        <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center">
-            <div class="flex-1 pr-3">
-                <span class="text-xs font-bold uppercase tracking-wide text-morango bg-morango-light px-2 py-0.5 rounded-full">Produto</span>
-                <h2 class="font-extrabold text-lg mt-1">Bandeja de Morangos</h2>
-                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">Morangos selecionados e fresquinhos, entregues direto na escola.</p>
-                <p class="text-morango font-black text-lg mt-2">R$ 11,50</p>
-            </div>
-            <img src="Morangos-Tatuí.png"
-                 onerror="this.src='https://placehold.co/80x80/fde8ec/E3244B?text=🍓'"
-                 alt="Bandeja de Morango"
-                 class="w-20 h-20 object-cover rounded-xl flex-shrink-0">
-        </div>
-
-        <div id="mensagemErro" class="items-center gap-3 bg-red-50 border border-red-200 rounded-2xl p-3 text-sm text-red-700 font-semibold">
-            <span class="text-lg">⚠️</span>
-            <span id="textoErro">Ocorreu um erro. Tente novamente.</span>
-        </div>
-
-        <form id="pedidoForm" novalidate class="space-y-3">
-            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-sm text-gray-600 flex items-center gap-1">
-                        🧑‍🎓 <span>Dados do(s) Aluno(s)</span>
-                    </h3>
-                </div>
-                
-                <div id="alunosContainer" class="space-y-4">
-                    <div class="aluno-item space-y-2.5">
-                        <input type="text" name="nomeAluno" required autocomplete="off"
-                               placeholder="Nome completo do aluno"
-                               class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-                        <input type="text" name="turma" required autocomplete="off"
-                               placeholder="Série / Turma (Ex: 2º Ano A)"
-                               class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-                    </div>
-                </div>
-                
-                <button type="button" id="btnAddAluno" class="mt-4 w-full bg-morango-light text-morango font-bold py-2.5 rounded-xl text-sm hover:bg-red-100 transition flex items-center justify-center gap-2">
-                    <span>+</span> Incluir outro irmão/irmã
-                </button>
-            </div>
-
-            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100">
-                <h3 class="font-bold mb-3 text-sm text-gray-600 flex items-center gap-1">
-                    📱 <span>Dados do Responsável</span>
-                </h3>
-                <div class="space-y-2.5">
-                    <input type="text" id="nomeResponsavel" required autocomplete="name"
-                           placeholder="Seu nome completo"
-                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-                    <input type="tel" id="telefone" required autocomplete="tel"
-                           placeholder="(15) 99999-9999" maxlength="15"
-                           class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-                </div>
-            </div>
-
-            <div class="slide-up bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center justify-between">
-                <span class="font-bold text-gray-700 text-sm">Quantidade de bandejas:</span>
-                <div class="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-200">
-                    <button type="button" id="btnMenos"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg bg-white text-morango font-black shadow-sm hover:bg-red-50 transition-colors text-lg leading-none">
-                        −
-                    </button>
-                    <span id="displayQuantidade" class="font-black w-5 text-center text-gray-800 text-base">1</span>
-                    <button type="button" id="btnMais"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg bg-morango-light text-morango font-black shadow-sm hover:bg-red-100 transition-colors text-lg leading-none">
-                        +
-                    </button>
-                </div>
-            </div>
-        </form>
-    </main>
-
-    <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-4 pt-3 pb-6 shadow-xl">
-        <div class="max-w-md mx-auto flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Total a pagar</p>
-                <p class="font-black text-2xl text-gray-800">R$ <span id="valorTotal">11,50</span></p>
-            </div>
-            <button id="btnPagar"
-                    class="btn-pagar text-white font-bold py-3 px-7 rounded-full shadow-md text-sm">
-                Pagar Agora 💳
-            </button>
+            <!-- Botão WhatsApp -->
+            <a href="https://wa.me/5515991947140?text=Olá!%20Gostaria%20de%20falar%20sobre%20os%20pedidos%20de%20morango%20da%20escola." target="_blank" 
+               class="flex items-center justify-center gap-2 w-full bg-whatsapp hover-bg-whatsapp-dark text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                </svg>
+                Dúvidas? Chame no Zap
+            </a>
         </div>
     </div>
 
-<script>
-    const PRECO_BANDEJA = 11.50;
-    const SUPABASE_URL = 'https://fepvxdmssoqfktqmbyzn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcHZ4ZG1zc29xZmt0cW1ieXpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDg4NjUsImV4cCI6MjA4OTkyNDg2NX0.Duy840JZEMWxXzguf1JV71xhjdaLmpZiileBdGAJf0I';
-
-    const { createClient } = window.supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let quantidade = 1;
-    const btnMenos        = document.getElementById('btnMenos');
-    const btnMais         = document.getElementById('btnMais');
-    const displayQtd      = document.getElementById('displayQuantidade');
-    const spanValorTotal  = document.getElementById('valorTotal');
-    const inputTelefone   = document.getElementById('telefone');
-    const btnPagar        = document.getElementById('btnPagar');
-    const mensagemErro    = document.getElementById('mensagemErro');
-    const textoErro       = document.getElementById('textoErro');
-
-    const btnAddAluno = document.getElementById('btnAddAluno');
-    const alunosContainer = document.getElementById('alunosContainer');
-
-    btnAddAluno.addEventListener('click', () => {
-        const count = alunosContainer.children.length + 1;
-        const div = document.createElement('div');
-        div.className = 'aluno-item space-y-2.5 pt-4 border-t border-gray-100 mt-4 relative slide-up';
-        div.innerHTML = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Irmão ${count}</span>
-                <button type="button" class="text-red-500 text-xs font-bold hover:text-red-700 px-2 py-1 bg-red-50 rounded btn-remover">Remover</button>
-            </div>
-            <input type="text" name="nomeAluno" required autocomplete="off" placeholder="Nome completo do irmão" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-            <input type="text" name="turma" required autocomplete="off" placeholder="Série / Turma (Ex: 5º Ano B)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-all">
-        `;
-        alunosContainer.appendChild(div);
-
-        quantidade++;
-        atualizarTela();
-
-        div.querySelector('.btn-remover').addEventListener('click', function() {
-            div.remove();
-            renumerarAlunos();
-            if(quantidade > 1) { quantidade--; atualizarTela(); }
-        });
-    });
-
-    function renumerarAlunos() {
-        const items = alunosContainer.querySelectorAll('.aluno-item');
-        items.forEach((item, index) => {
-            if (index > 0) {
-                const span = item.querySelector('span');
-                if(span) span.innerText = 'IRMÃO ' + (index + 1);
-            }
-        });
-    }
-
-    function atualizarTela() {
-        displayQtd.innerText = quantidade;
-        spanValorTotal.innerText = (quantidade * PRECO_BANDEJA).toFixed(2).replace('.', ',');
-    }
-
-    btnMenos.addEventListener('click', () => { if (quantidade > 1) { quantidade--; atualizarTela(); } });
-    btnMais.addEventListener('click', () => { quantidade++; atualizarTela(); });
-
-    inputTelefone.addEventListener('input', function () {
-        let digits = this.value.replace(/\D/g, '').slice(0, 11);
-        if (digits.length === 0) { this.value = ''; return; }
-        let formatted = '(' + digits.slice(0, 2);
-        if (digits.length > 2) formatted += ') ' + digits.slice(2, 7);
-        if (digits.length > 7) formatted += '-' + digits.slice(7, 11);
-        this.value = formatted;
-    });
-
-    function validarFormulario() {
-        const nomesInputs = document.querySelectorAll('input[name="nomeAluno"]');
-        const turmasInputs = document.querySelectorAll('input[name="turma"]');
-        const nomeResp   = document.getElementById('nomeResponsavel').value.trim();
-        const telDigitos = inputTelefone.value.replace(/\D/g, '');
-
-        let alunosPreenchidos = true;
-        nomesInputs.forEach(i => { if(!i.value.trim()) alunosPreenchidos = false; });
-        turmasInputs.forEach(i => { if(!i.value.trim()) alunosPreenchidos = false; });
-
-        if (!alunosPreenchidos) return 'Preencha o nome e a turma de todos os alunos.';
-        if (!nomeResp) return 'Informe o seu nome de responsável.';
-        if (telDigitos.length < 10) return 'Informe um telefone válido com DDD.';
-        return null;
-    }
-
-    function mostrarErro(msg) {
-        textoErro.innerText = msg;
-        mensagemErro.classList.add('visible');
-        mensagemErro.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    function esconderErro() { mensagemErro.classList.remove('visible'); }
-    function gerarIdSeguro() { return Date.now() + Math.floor(Math.random() * 1000); }
-
-    btnPagar.addEventListener('click', async () => {
-        esconderErro();
-        const erroValidacao = validarFormulario();
-        if (erroValidacao) { mostrarErro(erroValidacao); return; }
-
-        btnPagar.innerHTML = '<span class="spinner"></span>Processando...';
-        btnPagar.disabled = true;
-
-        const nomesArray = Array.from(document.querySelectorAll('input[name="nomeAluno"]')).map(i => i.value.trim());
-        const turmasArray = Array.from(document.querySelectorAll('input[name="turma"]')).map(i => i.value.trim());
-        
-        const nomeAlunoCombinado = nomesArray.join(' e ');
-        const turmaCombinada = turmasArray.join(' e ');
-
-        const nomeResponsavel = document.getElementById('nomeResponsavel').value.trim();
-        const telefone        = inputTelefone.value.trim();
-        const total           = quantidade * PRECO_BANDEJA;
-        const pedidoId        = gerarIdSeguro();
-
-        try {
-            const { error: erroBanco } = await supabaseClient
-                .from('pedidos_escola')
-                .insert([{
-                    id: pedidoId,
-                    nome_aluno: nomeAlunoCombinado,
-                    turma: turmaCombinada,
-                    nome_responsavel: nomeResponsavel,
-                    telefone_responsavel: telefone,
-                    quantidade: quantidade,
-                    valor_total: total,
-                    status_pagamento: 'pendente'
-                }]);
-
-            if (erroBanco) throw new Error('Erro Banco: ' + erroBanco.message);
-
-            const { data: pagamentoData, error: erroPagamento } = await supabaseClient.functions.invoke('gerar-pagamento', {
-                body: { 
-                    pedido_id: pedidoId, 
-                    quantidade: quantidade,
-                    nome_aluno: nomeAlunoCombinado,
-                    turma: turmaCombinada
-                }
-            });
-
-            if (erroPagamento) throw new Error('Erro MP: ' + erroPagamento.message);
-            if (!pagamentoData?.url) throw new Error('Link não retornado.');
-
-            window.location.href = pagamentoData.url;
-
-        } catch (error) {
-            console.error(error);
-            mostrarErro('Não foi possível gerar o pagamento. Tente novamente.');
-            btnPagar.innerHTML = 'Pagar Agora 💳';
-            btnPagar.disabled = false;
-        }
-    });
-</script>
 </body>
 </html>
