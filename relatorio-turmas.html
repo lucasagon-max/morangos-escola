@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório por Turmas - Morangos Tatuí</title>
+    <title>Lista Mestra de Entregas - Morangos Tatuí - Relatório Oficial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,25 +12,51 @@
         .text-morango { color: #E3244B; }
         .bg-morango { background-color: #E3244B; }
         
-        /* Mágica para quebrar a página na hora de imprimir cada turma */
         @media print {
-            body { background-color: white; font-size: 14px; }
+            body { background-color: white; font-size: 11px; margin: 0; position: relative; }
             .no-print { display: none !important; }
-            .turma-section { page-break-after: always; margin-bottom: 0 !important; border: none !important; box-shadow: none !important; }
-            .turma-section:last-child { page-break-after: auto; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000 !important; padding: 10px !important; text-align: left; }
-            th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-only { display: block !important; }
+            .shadow-sm, border { box-shadow: none !important; border: none !important; }
+            
+            /* === CONFIGURAÇÃO DA MARCA D'ÁGUA === */
+            #containerRelatorio::before {
+                content: "🍓";
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 200px;
+                color: rgba(227, 36, 75, 0.04);
+                z-index: -1;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #c0c0c0 !important; padding: 6px !important; text-align: left; }
+            th { background-color: #f9fafb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+            
+            /* Rodapé da impressora (Número de página) */
+            @page {
+                size: A4;
+                margin: 1.5cm 1cm;
+                @bottom-right {
+                    content: "Página " counter(page) " de " counter(pages);
+                    font-size: 8px;
+                    color: #999;
+                }
+            }
         }
     </style>
 </head>
 <body class="text-gray-800 p-6">
 
-    <!-- TELA DE LOGIN (A mesma segurança do Painel) -->
     <div id="telaLogin" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 no-print">
         <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
             <h2 class="text-2xl font-black text-gray-800 mb-2">🍓 Separação</h2>
-            <p class="text-sm text-gray-500 mb-6">Acesse para ver as listas</p>
+            <p class="text-sm text-gray-500 mb-6">Acesse o Relatório Oficial</p>
             <form id="formLogin" class="space-y-4">
                 <input type="email" id="email" required placeholder="E-mail" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-500">
                 <input type="password" id="senha" required placeholder="Senha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-500">
@@ -40,20 +66,76 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO DO RELATÓRIO -->
     <div id="conteudoPainel" class="hidden max-w-5xl mx-auto">
+        
         <header class="no-print flex items-center justify-between mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div>
-                <h1 class="text-2xl font-extrabold text-gray-800">Listas de Entrega por Turma</h1>
-                <p class="text-sm text-gray-500">Pronto para imprimir e entregar para as professoras</p>
+                <h1 class="text-2xl font-extrabold text-gray-800">Relatório de Entrega</h1>
+                <p class="text-sm text-gray-500">Documento blindado pronto para impressão</p>
             </div>
             <button onclick="window.print()" class="bg-morango hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center gap-2">
-                🖨️ Imprimir Listas Separadas
+                🖨️ Imprimir Lista Profissional
             </button>
         </header>
 
-        <div id="containerTurmas" class="space-y-8">
-            <p class="text-center text-gray-500 font-bold py-10">Organizando os alunos... 🍓</p>
+        <div id="containerRelatorio" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 relative z-10">
+            
+            <div class="hidden print-only mb-6 pb-4 border-b-2 border-morango flex items-start justify-between">
+                <div class="flex items-center gap-4">
+                    <img src="Morangos-Tatui-logotipo.jpg" alt="Logo Morangos Tatuí" class="h-16 rounded object-contain bg-white p-1">
+                    <div>
+                        <h1 class="text-2xl font-black text-gray-900 tracking-tight">🍓 Morangos Tatuí</h1>
+                        <p class="text-sm text-morango font-bold">Relatório Oficial de Entregas</p>
+                        <p class="text-xs text-gray-400">Tatuí - SP | contato@morangostatui.com.br</p>
+                    </div>
+                </div>
+                <div class="text-right text-xs">
+                    <p class="font-bold">Evento: Páscoa na Escola</p>
+                    <p>Total de bandejas: <strong class="text-lg" id="printTotalBandejas">0</strong></p>
+                </div>
+            </div>
+
+            <table class="w-full text-left" id="tabelaGeral">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-[10px] uppercase">
+                        <th class="p-3 text-center w-10 border-b border-gray-200">ID</th>
+                        <th class="p-3 border-b border-gray-200">Nome Completo do Aluno</th>
+                        <th class="p-3 border-b border-gray-200">Série/Turma (Informada)</th>
+                        <th class="p-3 border-b border-gray-200">Responsável (Pagante)</th>
+                        <th class="p-3 text-center print-only w-24 border-b border-gray-200">Confirmação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    <tr><td colspan="5" class="p-10 text-center text-gray-500 font-bold">Organizando os dados finais...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="hidden print-only mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-600 page-break-inside-avoid">
+                <h4 class="font-bold text-gray-800 mb-3 text-sm flex items-center gap-2">📄 Termo de Recebimento de Mercadoria</h4>
+                
+                <p class="mb-5 leading-relaxed">
+                    Declaro, para os devidos fins de controle logístico e financeiro, que recebi da empresa <strong>Morangos Tatuí</strong> a quantidade total de 
+                    <strong class="text-morango"><span id="reciboTotalBandejas">0</span> bandejas</strong> de morangos in natura, selecionados e higienizados, 
+                    conforme a relação nominal acima, para distribuição aos alunos da instituição de ensino.
+                </p>
+                
+                <div class="bg-orange-50 text-orange-800 p-3 rounded mb-6 border border-orange-100 font-semibold">
+                    ⚠️ AVISO IMPORTANTE: Os morangos são produtos perecíveis e devem ser mantidos em refrigeração ou local fresco até o momento da entrega.
+                    A responsabilidade pela conservação e integridade do produto passa a ser da instituição de ensino a partir do momento da assinatura deste recebimento.
+                </div>
+
+                <div class="flex items-end justify-between gap-10 mt-8">
+                    <div class="flex-1 border-t border-gray-300 pt-3 text-center">
+                        <p class="font-bold text-gray-800">Assinatura do Responsável (Escola)</p>
+                        <p>CPF: ___________________ Carimbo da Instituição</p>
+                    </div>
+                    <div class="text-right whitespace-nowrap">
+                        <p class="font-bold">Morangos Tatuí</p>
+                        <p>Tatuí, ____ de Abril de 2024</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -64,7 +146,6 @@
     const { createClient } = window.supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- LÓGICA DE LOGIN ---
     async function verificarSessao() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
@@ -89,10 +170,8 @@
         }
     });
 
-    // --- LÓGICA DO RELATÓRIO ---
     async function gerarRelatorio() {
         try {
-            // Busca apenas os pedidos PAGOS
             const { data, error } = await supabaseClient
                 .from('pedidos_escola')
                 .select('*')
@@ -101,106 +180,64 @@
             if (error) throw error;
 
             let alunosSeparados = [];
+            let totalBandejas = 0;
 
-            // Desmembra os irmãos
             data.forEach(pedido => {
+                totalBandejas += pedido.quantidade;
+                
                 const nomes = pedido.nome_aluno.split(' e ');
                 const turmas = pedido.turma.split(' e ');
                 
-                // Se o número de nomes for igual ao número de turmas, conseguimos separar certinho
                 const isMultiplo = nomes.length === turmas.length && nomes.length > 0;
 
                 if (isMultiplo) {
                     for (let i = 0; i < nomes.length; i++) {
                         alunosSeparados.push({
-                            aluno: nomes[i].trim(),
-                            turma: turmas[i].trim().toUpperCase(),
-                            responsavel: pedido.nome_responsavel,
-                            qtd_total_pai: pedido.quantidade
+                            aluno: nomes[i].trim().toUpperCase(),
+                            turma: turmas[i].trim(),
+                            responsavel: pedido.nome_responsavel
                         });
                     }
                 } else {
-                    // Se o pai preencheu fora do padrão, vai a string inteira mesmo
                     alunosSeparados.push({
-                        aluno: pedido.nome_aluno,
-                        turma: pedido.turma.toUpperCase(),
-                        responsavel: pedido.nome_responsavel,
-                        qtd_total_pai: pedido.quantidade
+                        aluno: pedido.nome_aluno.toUpperCase(),
+                        turma: pedido.turma,
+                        responsavel: pedido.nome_responsavel
                     });
                 }
             });
 
-            // Agrupa por Turma
-            const turmasAgrupadas = {};
-            alunosSeparados.forEach(item => {
-                if (!turmasAgrupadas[item.turma]) turmasAgrupadas[item.turma] = [];
-                turmasAgrupadas[item.turma].push(item);
-            });
-
-            // Ordena as turmas em ordem alfabética (1º Ano A, 1º Ano B, etc)
-            const turmasOrdenadas = Object.keys(turmasAgrupadas).sort();
+            alunosSeparados.sort((a, b) => a.aluno.localeCompare(b.aluno));
 
             let htmlFinal = '';
 
-            if (turmasOrdenadas.length === 0) {
-                htmlFinal = '<p class="text-center text-gray-500 font-bold py-10">Nenhum pedido pago encontrado.</p>';
-            }
-
-            turmasOrdenadas.forEach(nomeTurma => {
-                const alunosDaTurma = turmasAgrupadas[nomeTurma];
-                
-                // Ordena os alunos em ordem alfabética dentro da turma
-                alunosDaTurma.sort((a, b) => a.aluno.localeCompare(b.aluno));
-
-                let linhasTabela = '';
-                alunosDaTurma.forEach((item, index) => {
-                    linhasTabela += `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="p-3 text-center text-gray-400 font-bold w-10">${index + 1}</td>
-                            <td class="p-3 font-bold text-gray-800 text-lg uppercase">${item.aluno}</td>
-                            <td class="p-3 text-gray-600">${item.responsavel}</td>
-                            <td class="p-3 text-center print-only w-24">
-                                <div style="width: 24px; height: 24px; border: 2px solid #666; margin: 0 auto; border-radius: 4px;"></div>
+            if (alunosSeparados.length === 0) {
+                htmlFinal = '<tr><td colspan="5" class="p-10 text-center text-gray-500 font-bold">Nenhum pedido pago encontrado.</td></tr>';
+            } else {
+                alunosSeparados.forEach((item, index) => {
+                    htmlFinal += `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 page-break-inside-avoid">
+                            <td class="p-3 text-center text-gray-400 font-bold text-xs">${index + 1}</td>
+                            <td class="p-3 font-bold text-gray-800 text-sm">${item.aluno}</td>
+                            <td class="p-3 text-gray-600 text-xs">${item.turma}</td>
+                            <td class="p-3 text-gray-600 text-xs">${item.responsavel}</td>
+                            <td class="p-3 text-center print-only">
+                                <div style="width: 20px; height: 20px; border: 2px solid #666; margin: 0 auto; border-radius: 4px;"></div>
                             </td>
                         </tr>
                     `;
                 });
+            }
 
-                htmlFinal += `
-                    <div class="turma-section bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
-                        <div class="flex justify-between items-end border-b-2 border-morango pb-4 mb-4">
-                            <div>
-                                <h2 class="text-2xl font-black text-morango uppercase">TURMA: ${nomeTurma}</h2>
-                                <p class="text-gray-500 mt-1 font-semibold">Total de alunos nesta lista: ${alunosDaTurma.length}</p>
-                            </div>
-                            <div class="print-only text-right">
-                                <p class="text-xs text-gray-400">Morangos Tatuí</p>
-                                <p class="font-bold">Professora(o): _______________________</p>
-                            </div>
-                        </div>
-                        
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-sm uppercase">
-                                    <th class="p-3 text-center w-10">Nº</th>
-                                    <th class="p-3">Nome do Aluno</th>
-                                    <th class="p-3">Responsável (Pagante)</th>
-                                    <th class="p-3 text-center print-only w-24">Entregue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${linhasTabela}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            });
-
-            document.getElementById('containerTurmas').innerHTML = htmlFinal;
+            document.getElementById('corpoTabela').innerHTML = htmlFinal;
+            
+            // Atualiza os totais na impressão
+            document.getElementById('printTotalBandejas').innerText = totalBandejas;
+            document.getElementById('reciboTotalBandejas').innerText = totalBandejas;
 
         } catch (error) {
             console.error(error);
-            document.getElementById('containerTurmas').innerHTML = '<p class="text-center text-red-500 font-bold py-10">Erro ao carregar as turmas.</p>';
+            document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-500 font-bold">Erro de segurança ou ao carregar os dados.</td></tr>';
         }
     }
 
